@@ -984,9 +984,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
 
-			-- should be left, and we test for null
+			-- should be left, since we explicitly test for null
 			left join reference_source rs on vt.reference_source_id = rs.id
-
 
 			-- reference source organisation
 			left join organisation rso on rs.organisation_id = rso.id
@@ -995,8 +994,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			-- in the original data
 			left join responsible_party rp on vr.owner_responsible_party_id = rp.id
 			left join organisation vro on rp.organisation_id = vro.id
-
-
 
 		</createView>
 
@@ -1105,71 +1102,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
-	<!-- ConceptScheme for parameter vocabulary 
-
-		ok, the big issue - is how we join this stuff up 
-		should we aggregate it ??
-
-		Actually since it's a skos view I think that we should.
-
-		and this allieviates us from having to write the _rdf view twice 
-	-->
-
-
-
-
-
-	<!-- -->
-
-
-
-
-	
-	<!--changeSet author="julian" id="000127">
-		<createView viewName="_rdf_skos_inscheme_3">
-			select
-				vt.uid as subject,
-				'skos:inScheme'::varchar as predicate,
-				s.name as object
-			from vocabulary_term vt
-			join term_category_classification tcc on tcc.vocabulary_term_id = vt.id
-			join classification_scheme s on tcc.classification_scheme_id = s.id
-		</createView>
-	</changeSet -->
-
-
-
-   <!--
-		sql for first and second tier broader predicate
-		union all
-
-		select
-		vt.uid as subject,
-		'skos:broader' as predicate,
-		t1_csc.name as object
-
-		from vocabulary_term vt
-		- get second-tier category
-		join term_category_classification tcc on tcc.vocabulary_term_id = vt.id
-		join classification_scheme_category t2_csc on tcc.classification_scheme_category_id = t2_csc.id
-		- get first-tier category
-		join classification_scheme_association csa on csa.classification_scheme_category_id = t2_csc.id
-		join classification_scheme_category t1_csc on csa.parent_classification_scheme_category_id = t1_csc.id
-	-->
-
-	<changeSet author="julian" id="000128--1">
-		<createView viewName="_rdf_skos_inscheme_3">
-			select
-				trim(vt.uid) as uid,
-				'skos:inScheme'::varchar as predicate,
-				trim( cs.name) as classification_scheme_name
-			from _term_classification_scheme  tcs
-			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
-			join classification_scheme cs on cs.id = tcs.classification_scheme_id
-		</createView>
-
-	</changeSet>
-
 
 	<changeSet author="julian" id="000128">
 		<createView viewName="_rdf_skos_broader_2">
@@ -1243,7 +1175,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select * from _whoot_rdf_concept_scheme 
 			union all select * from _whoot_rdf_concept
 
-			union all select * from _rdf_skos_inscheme_3
 			union all select * from _rdf_skos_broader_2
 			union all select * from _rdf_skos_narrower_2
 			union all select * from _rdf_skos_broader_3
