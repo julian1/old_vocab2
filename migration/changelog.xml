@@ -838,16 +838,21 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 			select
-				r.uid as subject,
+				vr.uid as subject,
 				'skos:ConceptScheme'::varchar as rdf_type,
+				vr.date as dcterms_issued,
+				vr.name as dc_title,
+				vr.content_summary as dc_description,
+				o.name as dc_creator,
+				p.name as dc_publisher
 
-				null as dcterms_issued,
-				null as dc_title,
-				null as dc_description,
-				null as dc_creator,
-				null as dc_publisher
+			from vocabulary_register vr
 
-			from vocabulary_register r
+			join responsible_party rp on rp.id = vr. owner_responsible_party_id
+			join organisation o on rp.organisation_id = o.id
+
+			join responsible_party rp2 on rp2.id = vr. owner_responsible_party_id
+			join person p on rp2.person_id = p.id
 
 
 		</createView>
@@ -974,50 +979,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		and this allieviates us from having to write the _rdf view twice 
 	-->
 
-	<changeSet author="julian" id="000113">
-		<createView viewName="_rdf_type_concept_scheme_2"> <!-- for vocaublary register -->
-			select
-				r.uid as subject,
-				'rdf:type'::varchar as predicate,
-				'skos:ConceptScheme'::varchar as object
-			from vocabulary_register r
-		</createView>
-	</changeSet>
 
-
-
-	<!-- title is name -->
-	<changeSet author="julian" id="000114">
-		<createView viewName="_rdf_dc_title_2">
-			select
-				vr.uid as subject,
-				'dc:title'::varchar as predicate,
-				vr.name as object
-			from vocabulary_register vr
-		</createView>
-	</changeSet>
-
-	<changeSet author="julian" id="000115">
-		<createView viewName="_rdf_dc_description_2">
-			select
-				vr.uid as subject,
-				'dc:description'::varchar as predicate,
-				vr.content_summary as object
-			from vocabulary_register vr
-		</createView>
-	</changeSet>
-
-	<changeSet author="julian" id="000116">
-		<createView viewName="_rdf_dc_creator_2">
-			select
-				vr.uid as subject,
-				'dc:creator'::varchar as predicate,
-				o.name
-			from vocabulary_register vr
-			join responsible_party rp on rp.id = vr. owner_responsible_party_id
-			join organisation o on rp.organisation_id = o.id
-		</createView>
-	</changeSet>
 
 	<changeSet author="julian" id="000117">
 		<createView viewName="_rdf_dc_publisher_2">
@@ -1041,6 +1003,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			from vocabulary_register vr
 		</createView>
 	</changeSet>
+
+
 
 	<changeSet author="julian" id="000119">
 		<createView viewName="_rdf_dcterms_issued_3">
@@ -1308,10 +1272,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			-- union all select * from _rdf_skos_inscheme
 
-			union all select * from _rdf_type_concept_scheme_2
-			union all select * from _rdf_dc_title_2
-			union all select * from _rdf_dc_description_2
-			union all select * from _rdf_dc_creator_2
 			union all select * from _rdf_dc_publisher_2
 			union all select * from _rdf_dcterms_has_version
 			union all select * from _rdf_dcterms_issued_3
