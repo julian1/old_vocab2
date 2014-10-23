@@ -834,6 +834,22 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join responsible_party rp2 on rp2.id = s.responsible_party_id
 			join person p on rp2.person_id = p.id
 
+			union all
+
+
+			select
+				r.uid as subject,
+				'skos:ConceptScheme'::varchar as rdf_type,
+
+				null as dcterms_issued,
+				null as dc_title,
+				null as dc_description,
+				null as dc_creator,
+				null as dc_publisher
+
+			from vocabulary_register r
+
+
 		</createView>
 
 		<createView viewName="_whoot_rdf_concept_scheme">
@@ -948,7 +964,15 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
-	<!-- ConceptScheme for parameter vocabulary -->
+	<!-- ConceptScheme for parameter vocabulary 
+
+		ok, the big issue - is how we join this stuff up 
+		should we aggregate it ??
+
+		Actually since it's a skos view I think that we should.
+
+		and this allieviates us from having to write the _rdf view twice 
+	-->
 
 	<changeSet author="julian" id="000113">
 		<createView viewName="_rdf_type_concept_scheme_2"> <!-- for vocaublary register -->
