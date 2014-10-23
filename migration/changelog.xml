@@ -1058,17 +1058,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	</changeSet>
 
 
-	<changeSet author="julian" id="000126">
-		<createView viewName="_rdf_dcterms_created">
-			select
-			vt.uid as subject,
-			'dcterms:created'::varchar as predicate,
-			vt.date_added::varchar as object
-			from vocabulary_term vt
-		</createView>
-	</changeSet>
-
-
+	
 	<!--changeSet author="julian" id="000127">
 		<createView viewName="_rdf_skos_inscheme_3">
 			select
@@ -1225,7 +1215,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			union all select * from _rdf_dc_source
 			union all select * from _rdf_dc_publisher_3
-			union all select * from _rdf_dcterms_created
 			union all select * from _rdf_skos_inscheme_3
 			union all select * from _rdf_skos_broader_2
 			union all select * from _rdf_skos_narrower_2
