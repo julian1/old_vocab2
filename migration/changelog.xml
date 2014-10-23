@@ -1010,6 +1010,29 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join classification_scheme_category c1 on a.classification_scheme_category_id = c1.id
 			join classification_scheme_category c2 on a.parent_classification_scheme_category_id = c2.id
 			-- order by c2.name, c1.name
+
+			union all
+			select
+				vt.uid as subject,
+				-- 'skos:broader' as predicate,
+				csc.name as object
+			from vocabulary_term vt
+			-- get second-tier category
+			join term_category_classification tcc on tcc.vocabulary_term_id = vt.id
+			join classification_scheme_category csc on tcc.classification_scheme_category_id = csc.id
+
+			union all
+
+			select
+                svt.uid as subject,
+                -- 'skos:broader' as predicate,
+                ovt.uid as object
+            from internal_associated_terms iat
+            left join vocabulary_term svt on iat.subject_vocabulary_term_id = svt.id
+            left join vocabulary_term ovt on iat.object_vocabulary_term_id = ovt.id
+            where association_type_name = 'isInstanceOf'
+
+
 		</createView>
 
 		<!-- should be constrained to be top concept only -->
