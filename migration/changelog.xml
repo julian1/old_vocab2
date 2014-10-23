@@ -953,18 +953,12 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.label as skos_preflabel,
 				c.description as skos_definition,
 				c.date_added as dcterms_issued,
-				s.name as skos_inscheme,
 				-- should be issued ?
 				null as dcterms_created,
 				null as dc_source,
 				null as dc_publisher
 
 			from classification_scheme_category c
-			join classification_scheme_association a on c.id = a.classification_scheme_category_id
-			join classification_scheme s on c.classification_scheme_id = s.id
-			-- not a root node
-			-- where a.parent_classification_scheme_category_id is not null
-
 
 			union all
 			select
@@ -973,7 +967,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				vt.name as skos_preflabel,
 				vt.definition as skos_definition,
 				null as dcterms_issued,
-				vr.uid as skos_inscheme,
 				-- should be issued ?
 				vt.date_added as dcterms_created,
 				case when rs.citation_string is not null
@@ -1030,6 +1023,27 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			from _whoot_concept_skos_broader
 		</createView>
 
+		<createView viewName="_whoot_concept_skos_inscheme">
+			select
+				vt.uid as subject,
+				cs.name as object 
+			from _term_classification_scheme tcs
+			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
+			join classification_scheme cs on cs.id = tcs.classification_scheme_id
+
+			union all 
+			select
+				c.name as subject,
+				s.name as object
+			from classification_scheme_category c
+			join classification_scheme_association a on c.id = a.classification_scheme_category_id
+			join classification_scheme s on c.classification_scheme_id = s.id
+
+
+		</createView>
+
+		
+
 
 		<createView viewName="_whoot_rdf_concept">
 			select 
@@ -1048,10 +1062,12 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select
 				c.subject, 'dcterms:issued'::varchar, c.dcterms_issued::varchar
 			from _whoot_concept  c	
+
 			union all
 			select
-				c.subject, 'skos:inScheme'::varchar, c.skos_inscheme
-			from _whoot_concept  c	
+				s.subject, 'skos:inScheme'::varchar, s.object
+			from _whoot_concept_skos_inscheme  s	
+
 			union all
 			select
 				b.subject, 'skos:broader'::varchar, b.object
