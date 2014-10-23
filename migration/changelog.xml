@@ -897,13 +897,13 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
-
+	<!-- CONCEPT -->
 
 	<changeSet author="julian" id="000107--001">
 	
 		<!-- one-to-one fields -->	
 		<createView viewName="_whoot_concept">
-				select
+			select
 				c.name as subject,
 				'skos:Concept'::varchar as rdf_type,
 				c.label as skos_preflabel,
@@ -915,6 +915,21 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join classification_scheme s on c.classification_scheme_id = s.id
 			-- not a root node
 			-- where a.parent_classification_scheme_category_id is not null
+
+
+			union all
+			select
+				vt.uid as subject,
+				'skos:Concept'::varchar as rdf_type,
+				vt.name as skos_preflabel,
+				null as skos_definition,
+				null as dcterms_issued,
+				null as skos_inscheme
+
+			from vocabulary_term vt
+
+
+
 		</createView>
 
 		<!-- the inscheme stuff isn't right because it could be in several schemes -->
