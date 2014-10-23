@@ -897,6 +897,50 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
+
+
+	<changeSet author="julian" id="000127">
+
+		<createView viewName="_term_classification_scheme_category">
+			-- map the classification_scheme_category id's with the term id.
+			-- we only deal with one level of indirection via the iat, because
+			-- that's all that the data requires
+			select
+			vt1.id as vocabulary_term_id,
+			case when csc1.id is not null
+				then csc1.id
+				else csc2.id
+			end as classification_scheme_category_id --,
+			-- join directly through tcc
+			from vocabulary_term vt1
+			left join term_category_classification tcc1 on tcc1.vocabulary_term_id = vt1.id
+			left join classification_scheme_category csc1 on tcc1.classification_scheme_category_id = csc1.id
+			-- join through tcc and one level of the iat
+			left join internal_associated_terms iat on iat.subject_vocabulary_term_id = vt1.id
+			and iat.association_type_name = 'isInstanceOf'
+			left join term_category_classification tcc2 on tcc2.vocabulary_term_id = iat.object_vocabulary_term_id
+			left join classification_scheme_category csc2 on tcc2.classification_scheme_category_id = csc2.id
+		</createView>
+
+		<createView viewName="_term_classification_scheme">
+			-- map the classification_scheme id's with the the term id, by looking through the
+			-- classification_scheme_category.
+			-- note that all classification_scheme_category's maintain a ref to the classification_scheme
+			-- not just root ones.
+			select
+				mv.vocabulary_term_id as vocabulary_term_id,
+				csc.classification_scheme_id as classification_scheme_id
+			from _term_classification_scheme_category mv
+			join classification_scheme_category csc on csc.id =  mv.classification_scheme_category_id
+			join classification_scheme cs on cs.id = csc.classification_scheme_id
+		</createView>
+
+
+	</changeSet>
+
+
+
+
 	<!-- CONCEPT -->
 
 	<changeSet author="julian" id="000107--001">
@@ -1070,54 +1114,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	</changeSet -->
 
 
-	<changeSet author="julian" id="000127">
-
-		<createView viewName="_term_classification_scheme_category">
-			-- map the classification_scheme_category id's with the term id.
-			-- we only deal with one level of indirection via the iat, because
-			-- that's all that the data requires
-			select
-			vt1.id as vocabulary_term_id,
-			case when csc1.id is not null
-				then csc1.id
-				else csc2.id
-			end as classification_scheme_category_id --,
-			-- join directly through tcc
-			from vocabulary_term vt1
-			left join term_category_classification tcc1 on tcc1.vocabulary_term_id = vt1.id
-			left join classification_scheme_category csc1 on tcc1.classification_scheme_category_id = csc1.id
-			-- join through tcc and one level of the iat
-			left join internal_associated_terms iat on iat.subject_vocabulary_term_id = vt1.id
-			and iat.association_type_name = 'isInstanceOf'
-			left join term_category_classification tcc2 on tcc2.vocabulary_term_id = iat.object_vocabulary_term_id
-			left join classification_scheme_category csc2 on tcc2.classification_scheme_category_id = csc2.id
-		</createView>
-
-		<createView viewName="_term_classification_scheme">
-			-- map the classification_scheme id's with the the term id, by looking through the
-			-- classification_scheme_category.
-			-- note that all classification_scheme_category's maintain a ref to the classification_scheme
-			-- not just root ones.
-			select
-				mv.vocabulary_term_id as vocabulary_term_id,
-				csc.classification_scheme_id as classification_scheme_id
-			from _term_classification_scheme_category mv
-			join classification_scheme_category csc on csc.id =  mv.classification_scheme_category_id
-			join classification_scheme cs on cs.id = csc.classification_scheme_id
-		</createView>
-
-		<createView viewName="_rdf_skos_inscheme_3">
-			select
-				trim(vt.uid) as uid,
-				'skos:inScheme'::varchar as predicate,
-				trim( cs.name) as classification_scheme_name
-			from _term_classification_scheme  tcs
-			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
-			join classification_scheme cs on cs.id = tcs.classification_scheme_id
-		</createView>
-
-	</changeSet>
-
 
    <!--
 		sql for first and second tier broader predicate
@@ -1136,6 +1132,19 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		join classification_scheme_association csa on csa.classification_scheme_category_id = t2_csc.id
 		join classification_scheme_category t1_csc on csa.parent_classification_scheme_category_id = t1_csc.id
 	-->
+
+	<changeSet author="julian" id="000128--1">
+		<createView viewName="_rdf_skos_inscheme_3">
+			select
+				trim(vt.uid) as uid,
+				'skos:inScheme'::varchar as predicate,
+				trim( cs.name) as classification_scheme_name
+			from _term_classification_scheme  tcs
+			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
+			join classification_scheme cs on cs.id = tcs.classification_scheme_id
+		</createView>
+
+	</changeSet>
 
 
 	<changeSet author="julian" id="000128">
