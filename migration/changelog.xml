@@ -945,10 +945,16 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				'skos:TopConcept'::varchar as rdf_type,
 				c.label as skos_preflabel,
 				c.description as skos_definition,
-				c.date_added as dcterms_issued 
+				c.date_added as dcterms_issued,
+				s.name as skos_inscheme
+
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
-			where parent_classification_scheme_category_id is null
+
+
+			join classification_scheme s on c.classification_scheme_id = s.id
+
+			where a.parent_classification_scheme_category_id is null
 
 		</createView>
 
@@ -968,6 +974,12 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select
 				tc.subject, 'dcterms:issued'::varchar, tc.dcterms_issued::varchar
 			from _whoot_top_concept  tc	
+
+			union all
+			select
+				tc.subject, 'skos:inScheme'::varchar, tc.skos_inscheme
+			from _whoot_top_concept  tc	
+
 		</createView>
 
 	</changeSet>
@@ -976,7 +988,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
-
+	<!-- applies to Concept and TopConcept --> 
 	<!-- category in a scheme -->
 	<changeSet author="julian" id="000109">
 		<createView viewName="_rdf_skos_inscheme">
