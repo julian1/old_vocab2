@@ -1366,9 +1366,9 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			union all select * from _rdf_dc_creator
 			union all select * from _rdf_dc_publisher
 			union all select * from _rdf_type_top_concept
-			union all select * from _rdf_skos_pref_label
-			union all select * from _rdf_skos_definition
-			union all select * from _rdf_dcterms_issued_2
+			
+			
+
 			union all select * from _rdf_skos_inscheme
 			union all select * from _rdf_skos_narrower
 			union all select * from _rdf_skos_broader
