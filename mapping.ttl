@@ -69,6 +69,13 @@ map:ConceptSchemePublisher a d2rq:PropertyBridge;
     d2rq:column "_whoot_concept_scheme.dc_publisher";
 	.
 
+map:ConceptSchemeHasVersion a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:ConceptScheme;
+    d2rq:property dcterms:hasVersion;
+    d2rq:uriColumn "_whoot_concept_scheme.dcterms_hasversion";
+	.
+
+
 
 ### Concept
 
