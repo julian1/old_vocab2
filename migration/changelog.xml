@@ -935,11 +935,10 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		</createView>
 	</changeSet-->
 
-	<!-- concept category -->
+	<!-- TOPCONCEPT concept category -->
 	<!-- this is for any category - not just top concept -->
 	<changeSet author="julian" id="000107--000">
 		<createView viewName="_whoot_top_concept">
-
 			select
 				c.name as subject,
 				'skos:TopConcept'::varchar as rdf_type,
@@ -950,12 +949,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
-
-
 			join classification_scheme s on c.classification_scheme_id = s.id
-
 			where a.parent_classification_scheme_category_id is null
-
 		</createView>
 
 		<createView viewName="_whoot_rdf_top_concept">
@@ -974,21 +969,16 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select
 				tc.subject, 'dcterms:issued'::varchar, tc.dcterms_issued::varchar
 			from _whoot_top_concept  tc	
-
 			union all
 			select
 				tc.subject, 'skos:inScheme'::varchar, tc.skos_inscheme
 			from _whoot_top_concept  tc	
-
 		</createView>
-
 	</changeSet>
 
 
 
-
-
-	<!-- applies to Concept and TopConcept --> 
+	<!-- applies to Concept and TopConcept ** have done the topconcept --> 
 	<!-- category in a scheme -->
 	<changeSet author="julian" id="000109">
 		<createView viewName="_rdf_skos_inscheme">

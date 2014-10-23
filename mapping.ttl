@@ -2,6 +2,7 @@
 #@prefix db: <> .
 @prefix vocab: <vocab/> .
 @prefix skos: <skos/> .
+@prefix dcterms: <dcterms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -36,12 +37,31 @@ map:TopConcept a d2rq:ClassMap;
 	d2rq:class skos:TopConcept;
 	.
 
-
-map:PaperTitle a d2rq:PropertyBridge;
+map:TopConceptSkosPrefLabel a d2rq:PropertyBridge;
     d2rq:belongsToClassMap map:TopConcept;
     d2rq:property skos:prefLabel;
     d2rq:column "_whoot_top_concept.skos_preflabel";
     d2rq:lang "en";
+	.
+
+map:TopConceptSkosDefinition a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:TopConcept;
+    d2rq:property skos:definition;
+    d2rq:column "_whoot_top_concept.skos_definition";
+    d2rq:lang "en";
+	.
+
+# date field
+map:TopConceptDctermsIssued a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:TopConcept;
+    d2rq:property dcterms:issued;
+    d2rq:column "_whoot_top_concept.dcterms_issued";
+	.
+
+map:TopConceptSkosInscheme a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:TopConcept;
+    d2rq:property skos:inScheme;
+    d2rq:column "_whoot_top_concept.skos_inscheme";
 	.
 
 
