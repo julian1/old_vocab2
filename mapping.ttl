@@ -3,6 +3,7 @@
 @prefix vocab: <vocab/> .
 @prefix skos: <skos/> .
 @prefix dcterms: <dcterms/> .
+@prefix dc: <dc/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -44,10 +45,29 @@ map:ConceptSchemeDctermsIssued a d2rq:PropertyBridge;
     d2rq:column "_whoot_concept_scheme.dcterms_issued";
 	.
 
+map:ConceptSchemeTitle a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:ConceptScheme;
+    d2rq:property dc:title;
+    d2rq:column "_whoot_concept_scheme.dc_title";
+	.
 
+map:ConceptSchemeDescription a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:ConceptScheme;
+    d2rq:property dc:description;
+    d2rq:column "_whoot_concept_scheme.dc_description";
+	.
 
+map:ConceptSchemeCreator a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:ConceptScheme;
+    d2rq:property dc:creator;
+    d2rq:column "_whoot_concept_scheme.dc_creator";
+	.
 
-
+map:ConceptSchemePublisher a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:ConceptScheme;
+    d2rq:property dc:publisher;
+    d2rq:column "_whoot_concept_scheme.dc_publisher";
+	.
 
 
 ### Concept
