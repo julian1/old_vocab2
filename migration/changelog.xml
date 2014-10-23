@@ -911,7 +911,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.date_added as dcterms_issued,
 				s.name as skos_inscheme,
 				-- should be issued ?
-				null as dcterms_created
+				null as dcterms_created,
+				null as dc_source
 
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
@@ -929,12 +930,19 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				null as dcterms_issued,
 				vr.uid as skos_inscheme,
 				-- should be issued ?
-				vt.date_added as dcterms_created
+				vt.date_added as dcterms_created,
+				case when rs.citation_string is not null
+					then rs.citation_string
+					else vr.name
+				end as dc_source
+
 
 			from vocabulary_term vt
 
 			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
 
+			-- should be left, and we test for null
+			left join reference_source rs on vt.reference_source_id = rs.id
 
 		</createView>
 
