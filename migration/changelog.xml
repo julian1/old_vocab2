@@ -812,185 +812,60 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 	<!-- RDF views -->
 
-	<!-- Concept Scheme -->
-	<changeSet author="julian" id="000100-5">
-		<createView viewName="_rdf_type_concept_scheme">    <!-- for classification scheme -->
+
+	<!-- CONCEPT SCHEME -->	
+	<changeSet author="julian" id="000107--002">
+	
+		<!-- one-to-one fields -->	
+		<createView viewName="_whoot_concept_scheme">
 			select
 				s.name as subject,
-				'rdf:type'::varchar as predicate,
-				'skos:ConceptScheme'::varchar as object
+				'skos:ConceptScheme'::varchar as rdf_type,
+				s.date_added as dcterms_issued,
+				s.title as dc_title,
+				s.description as dc_description,
+				o.name as dc_creator,
+				p.name as dc_publisher
 			from classification_scheme s
-		</createView>
-	</changeSet>
 
-
-	<!-- classification scheme -->
-	<changeSet author="julian" id="000100-6">
-		<createView viewName="_rdf_dcterms_issued">
-			select
-				s.name as subject,
-				'dcterms:issued'::varchar as predicate,
-				s.date_added::varchar as object
-			from classification_scheme s
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000103">
-		<createView viewName="_rdf_dc_title">
-			select
-				s.name as subject,
-				'dc:title'::varchar as predicate,
-				s.title as object
-			from classification_scheme s
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000104">
-		<createView viewName="_rdf_dc_description">
-			select
-				s.name as subject,
-				'dc:description'::varchar as predicate,
-				s.description as object
-			from classification_scheme s
-		</createView>
-	</changeSet>
-
-
-	<!-- we're dealing with persons not organisations here
-		Mappings doc, suggests, should not include organisation here -->
-	<changeSet author="julian" id="000105">
-		<createView viewName="_rdf_dc_creator">
-			select
-				s.name as subject,
-				'dc:creator'::varchar as predicate,
-				o.name as object
-			from classification_scheme s
 			join responsible_party rp on rp.id = s.responsible_party_id
 			join organisation o on rp.organisation_id = o.id
-		</createView>
-	</changeSet>
 
+			join responsible_party rp2 on rp2.id = s.responsible_party_id
+			join person p on rp2.person_id = p.id
 
-	<changeSet author="julian" id="000106">
-		<createView viewName="_rdf_dc_publisher">
-			select
-				s.name as subject,
-				'dc:publisher'::varchar as predicate,
-				p.name as object
-			from classification_scheme s
-			join responsible_party rp on rp.id = s.responsible_party_id
-			join person p on rp.person_id = p.id
-		</createView>
-	</changeSet>
-
-
-	<!-- TopConcept -->
-	<!-- changeSet author="julian" id="000106-1">
-		<createView viewName="_rdf_type_top_concept">
-			select
-				c.name as subject,
-				'rdf:type'::varchar as predicate,
-				'skos:TopConcept'::varchar as object
-			from classification_scheme_category c
-			join classification_scheme_association a on c.id = a.classification_scheme_category_id
-			where parent_classification_scheme_category_id is null
-		</createView>
-	</changeSet -->
-
-
-	<!-- concept -->
-	<!-- this is for any category - not just top concept -->
-	<!-- changeSet author="julian" id="000107">
-		<createView viewName="_rdf_skos_pref_label">
-			select
-				c.name as subject,
-				'skos:prefLabel'::varchar as predicate,
-				c.label
-			from classification_scheme_category c
-		</createView>
-	</changeSet -->
-
-
-	<!-- this is for any category - not just top concept -->
-	<!-- changeSet author="julian" id="000107-5">
-		<createView viewName="_rdf_skos_definition">
-			select
-				c.name as subject,
-				'skos:definition'::varchar as predicate,
-				c.description
-			from classification_scheme_category c
-		</createView>
-	</changeSet -->
-
-	<!-- why not build aggregated views but group  somewhat -->
-	<!-- changeSet author="julian" id="000108">
-		<createView viewName="_rdf_dcterms_issued_2">
-			select
-				c.name as subject,
-				'dcterms:issued'::varchar as predicate,
-				c.date_added::varchar as object
-			from classification_scheme_category c
-		</createView>
-	</changeSet-->
-
-	<!-- TOPCONCEPT concept category -->
-	<!-- this is for any category - not just top concept -->
-	<changeSet author="julian" id="000107--000">
-		<createView viewName="_whoot_top_concept">
-			select
-				c.name as subject,
-				'skos:TopConcept'::varchar as rdf_type,
-				c.label as skos_preflabel,
-				c.description as skos_definition,
-				c.date_added as dcterms_issued,
-				s.name as skos_inscheme
-
-			from classification_scheme_category c
-			join classification_scheme_association a on c.id = a.classification_scheme_category_id
-			join classification_scheme s on c.classification_scheme_id = s.id
-			-- root node
-			where a.parent_classification_scheme_category_id is null
 		</createView>
 
-		<createView viewName="_whoot_rdf_top_concept">
+		<createView viewName="_whoot_rdf_concept_scheme">
 			select 
-				tc.subject as subject, 'skos:prefLabel' as predicate, tc.skos_preflabel as object 
-			from _whoot_top_concept  tc	
+				s.subject as subject, 'rdf:type' as predicate, s.rdf_type as object
+			from _whoot_concept_scheme s	
 			union all
 			select 
-				tc.subject as subject, 'rdf:type' as predicate, tc.rdf_type
-			from _whoot_top_concept  tc	
+				s.subject, 'dcterms:issued', s.dcterms_issued::varchar
+			from _whoot_concept_scheme s	
 			union all
-			select
-				tc.subject, 'skos:definition'::varchar, tc.skos_definition 
-			from _whoot_top_concept  tc	
+			select 
+				s.subject, 'dc:title', s.dc_title
+			from _whoot_concept_scheme s	
 			union all
-			select
-				tc.subject, 'dcterms:issued'::varchar, tc.dcterms_issued::varchar
-			from _whoot_top_concept  tc	
+			select 
+				s.subject, 'dc:description', s.dc_description
+			from _whoot_concept_scheme s	
 			union all
-			select
-				tc.subject, 'skos:inScheme'::varchar, tc.skos_inscheme
-			from _whoot_top_concept  tc	
+			select 
+				s.subject, 'dc:creator', s.dc_creator
+			from _whoot_concept_scheme s	
+			union all
+			select 
+				s.subject, 'dc:publisher', s.dc_publisher
+			from _whoot_concept_scheme s	
 		</createView>
 	</changeSet>
 
+	<!-- Concept Scheme -->
 
 
-	<!-- applies to Concept and TopConcept ** have done the topconcept --> 
-	<!-- category in a scheme -->
-	<changeSet author="julian" id="000109">
-		<createView viewName="_rdf_skos_inscheme">
-			select
-				c.name as subject,
-				'skos:inScheme' as predicate,
-				s.name as object
-			from classification_scheme_category c
-			join classification_scheme s on c.classification_scheme_id = s.id;
-		</createView>
-	</changeSet>
 
 
 
@@ -1010,8 +885,11 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
 			join classification_scheme s on c.classification_scheme_id = s.id
 			-- not a root node
-			where a.parent_classification_scheme_category_id is not null
+			-- where a.parent_classification_scheme_category_id is not null
 		</createView>
+
+		<!-- the inscheme stuff isn't right because it could be in several schemes -->
+
 
 		<!-- top concept won't have broader -->
 		<!-- one-to-many --> 
@@ -1066,42 +944,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		</createView>
 
 	</changeSet>
-
-
-	<!-- Concept -->
-	<!--changeSet author="julian" id="000111">
-		<createView viewName="_rdf_type_concept">
-			select
-				c.name as subject,
-				'rdf:type'::varchar as predicate,
-				'skos:Concept'::varchar as object
-			from classification_scheme_category c
-		</createView>
-	</changeSet -->
-
-
-	<!-- changeSet author="julian" id="000112">
-		<createView viewName="_rdf_skos_broader">
-			select
-				c1.name as subject,
-				'skos:broader' as predicate,
-				c2.name as object
-			from classification_scheme_association a
-			join classification_scheme_category c1 on a.classification_scheme_category_id = c1.id
-			join classification_scheme_category c2 on a.parent_classification_scheme_category_id = c2.id
-		</createView>
-	</changeSet -->
-
-
-	<!-- changeSet author="julian" id="000112-1">
-		<createView viewName="_rdf_skos_narrower">
-			select
-				b.object as subject,
-				'skos:narrower' as predicate,
-				b.subject as object
-			from _rdf_skos_broader b
-		</createView>
-	</changeSet -->
 
 
 
@@ -1436,18 +1278,11 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	<!-- aggregate rdf view -->
 	<changeSet author="julian" id="000307">
 		<createView viewName="_rdf">
-			select * from _rdf_dcterms_issued
-			union all select * from _rdf_type_concept_scheme
-			union all select * from _rdf_dc_publisher
-			union all select * from _rdf_dc_title
-			union all select * from _rdf_dc_description
-			union all select * from _rdf_dc_creator
-			union all select * from _rdf_dc_publisher
-			
-			union all select * from _whoot_rdf_top_concept
+			select * from _whoot_rdf_concept_scheme 
+			union all select * from _whoot_rdf_concept
 			
 
-			union all select * from _rdf_skos_inscheme
+			-- union all select * from _rdf_skos_inscheme
 
 			union all select * from _rdf_type_concept_scheme_2
 			union all select * from _rdf_dc_title_2
