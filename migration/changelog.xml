@@ -887,7 +887,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 	<!-- TopConcept -->
-	<changeSet author="julian" id="000106-1">
+	<!-- changeSet author="julian" id="000106-1">
 		<createView viewName="_rdf_type_top_concept">
 			select
 				c.name as subject,
@@ -897,7 +897,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
 			where parent_classification_scheme_category_id is null
 		</createView>
-	</changeSet>
+	</changeSet -->
 
 
 	<!-- concept -->
@@ -942,6 +942,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			select
 				c.name as subject,
+				'skos:TopConcept'::varchar as rdf_type,
 				c.label as skos_preflabel,
 				c.description as skos_definition,
 				c.date_added as dcterms_issued 
@@ -956,15 +957,17 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				tc.subject as subject, 'skos:prefLabel' as predicate, tc.skos_preflabel as object 
 			from _whoot_top_concept  tc	
 			union all
+			select 
+				tc.subject as subject, 'rdf:type' as predicate, tc.rdf_type
+			from _whoot_top_concept  tc	
+			union all
 			select
 				tc.subject, 'skos:definition'::varchar, tc.skos_definition 
 			from _whoot_top_concept  tc	
 			union all
 			select
-				tc.subject, 'skos:dcterms:issued'::varchar, tc.dcterms_issued::varchar
+				tc.subject, 'dcterms:issued'::varchar, tc.dcterms_issued::varchar
 			from _whoot_top_concept  tc	
-
-
 		</createView>
 
 	</changeSet>
@@ -1365,8 +1368,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			union all select * from _rdf_dc_description
 			union all select * from _rdf_dc_creator
 			union all select * from _rdf_dc_publisher
-			union all select * from _rdf_type_top_concept
 			
+			union all select * from _whoot_rdf_top_concept
 			
 
 			union all select * from _rdf_skos_inscheme
