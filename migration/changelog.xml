@@ -1024,6 +1024,11 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select
 				c.subject, 'dc:source'::varchar, c.dc_source
 			from _whoot_concept  c	
+			union all
+			select
+				c.subject, 'dc:publisher'::varchar, c.dc_publisher
+			from _whoot_concept  c	
+
 
 		</createView>
 
@@ -1049,31 +1054,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	<!-- -->
 
 
-
-
-	<changeSet author="julian" id="000125">
-		<createView viewName="_rdf_dc_publisher_3">
-			select
-			vt.uid as subject,
-			-- rs.organisation_id,
-			'dc:publisher'::varchar as predicate,
-			case
-				when rso.name is not null
-				then rso.name
-				else vro.name
-			end as object
-			from vocabulary_term vt
-			-- reference source organisation
-			left join reference_source rs on vt.reference_source_id = rs.id
-			left join organisation rso on rs.organisation_id = rso.id
-			-- vocabulary register organisation
-			-- Bad Data? or migration - contains references to value 52 but there is no corresponding organisation
-			-- in the original data
-			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
-			left join responsible_party rp on vr.owner_responsible_party_id = rp.id
-			left join organisation vro on rp.organisation_id = vro.id
-		</createView>
-	</changeSet>
 
 
 	
@@ -1229,9 +1209,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		<createView viewName="_rdf">
 			select * from _whoot_rdf_concept_scheme 
 			union all select * from _whoot_rdf_concept
-			
 
-			union all select * from _rdf_dc_publisher_3
 			union all select * from _rdf_skos_inscheme_3
 			union all select * from _rdf_skos_broader_2
 			union all select * from _rdf_skos_narrower_2

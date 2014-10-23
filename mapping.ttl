@@ -140,6 +140,13 @@ map:ConceptDcSource a d2rq:PropertyBridge;
     d2rq:property dc:source;
     d2rq:column "_whoot_concept.dc_source";
 	.	
+
+map:ConceptDcPublisher a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
+    d2rq:property dc:publisher;
+    d2rq:column "_whoot_concept.dc_publisher";
+	.	
+	
 	
 #######
 
