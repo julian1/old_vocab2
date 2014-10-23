@@ -902,7 +902,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 	<!-- concept -->
 	<!-- this is for any category - not just top concept -->
-	<changeSet author="julian" id="000107">
+	<!-- changeSet author="julian" id="000107">
 		<createView viewName="_rdf_skos_pref_label">
 			select
 				c.name as subject,
@@ -910,11 +910,11 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.label
 			from classification_scheme_category c
 		</createView>
-	</changeSet>
+	</changeSet -->
 
 
 	<!-- this is for any category - not just top concept -->
-	<changeSet author="julian" id="000107-5">
+	<!-- changeSet author="julian" id="000107-5">
 		<createView viewName="_rdf_skos_definition">
 			select
 				c.name as subject,
@@ -922,8 +922,18 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.description
 			from classification_scheme_category c
 		</createView>
-	</changeSet>
+	</changeSet -->
 
+	<!-- why not build aggregated views but group  somewhat -->
+	<!-- changeSet author="julian" id="000108">
+		<createView viewName="_rdf_dcterms_issued_2">
+			select
+				c.name as subject,
+				'dcterms:issued'::varchar as predicate,
+				c.date_added::varchar as object
+			from classification_scheme_category c
+		</createView>
+	</changeSet-->
 
 	<!-- concept category -->
 	<!-- this is for any category - not just top concept -->
@@ -932,26 +942,37 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			select
 				c.name as subject,
-				c.label as skos_prefLabel,
-				c.description as skos_definition
+				c.label as skos_preflabel,
+				c.description as skos_definition,
+				c.date_added as dcterms_issued 
 			from classification_scheme_category c
+			join classification_scheme_association a on c.id = a.classification_scheme_category_id
+			where parent_classification_scheme_category_id is null
+
 		</createView>
-	</changeSet>
 
-
-
-
-
-	<!-- why not build aggregated views but group  somewhat -->
-	<changeSet author="julian" id="000108">
-		<createView viewName="_rdf_dcterms_issued_2">
+		<createView viewName="_whoot_rdf_top_concept">
+			select 
+				tc.subject as subject, 'skos:prefLabel' as predicate, tc.skos_preflabel as object 
+			from _whoot_top_concept  tc	
+			union all
 			select
-				c.name as subject,
-				'dcterms:issued'::varchar as predicate,
-				c.date_added::varchar as object
-			from classification_scheme_category c
+				tc.subject, 'skos:definition'::varchar, tc.skos_definition 
+			from _whoot_top_concept  tc	
+			union all
+			select
+				tc.subject, 'skos:dcterms:issued'::varchar, tc.dcterms_issued::varchar
+			from _whoot_top_concept  tc	
+
+
 		</createView>
+
 	</changeSet>
+
+
+
+
+
 
 	<!-- category in a scheme -->
 	<changeSet author="julian" id="000109">
