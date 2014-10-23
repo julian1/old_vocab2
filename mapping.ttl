@@ -106,11 +106,6 @@ map:ConceptDctermsIssued a d2rq:PropertyBridge;
     d2rq:column "_whoot_concept.dcterms_issued";
 	.
 
-map:ConceptSkosInscheme a d2rq:PropertyBridge;
-    d2rq:belongsToClassMap map:Concept;
-    d2rq:property skos:inScheme;
-    d2rq:uriColumn "_whoot_concept.skos_inscheme";
-	.
 
 # one to many
 map:ConceptSkosBroader a d2rq:PropertyBridge;
@@ -146,7 +141,17 @@ map:ConceptDcPublisher a d2rq:PropertyBridge;
     d2rq:property dc:publisher;
     d2rq:column "_whoot_concept.dc_publisher";
 	.	
-	
+
+
+# one to many
+map:ConceptSkosInscheme a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
+    d2rq:property skos:inScheme;
+	d2rq:join "_whoot_concept.subject <= _whoot_concept_skos_inscheme.subject";
+    d2rq:uriColumn "_whoot_concept_skos_inscheme.object";
+	.
+
+
 	
 #######
 

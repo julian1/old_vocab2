@@ -1024,14 +1024,15 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 		</createView>
 
 		<createView viewName="_whoot_concept_skos_inscheme">
-			select
-				vt.uid as subject,
-				cs.name as object 
-			from _term_classification_scheme tcs
-			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
-			join classification_scheme cs on cs.id = tcs.classification_scheme_id
+
+			select 
+				vt.uid as subject, 
+				vr.uid as object 
+			from vocabulary_term vt 
+			join vocabulary_register vr on vr.id = vt.vocabulary_register_id 
 
 			union all 
+
 			select
 				c.name as subject,
 				s.name as object
@@ -1039,7 +1040,14 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
 			join classification_scheme s on c.classification_scheme_id = s.id
 
+			union all 
 
+			select
+				vt.uid as subject,
+				cs.name as object 
+			from _term_classification_scheme tcs
+			join vocabulary_term vt on vt.id = tcs.vocabulary_term_id
+			join classification_scheme cs on cs.id = tcs.classification_scheme_id
 		</createView>
 
 		
