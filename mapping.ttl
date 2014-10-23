@@ -31,37 +31,52 @@ map:contr_vocab_db a d2rq:Database;
 
 
 
-map:TopConcept a d2rq:ClassMap;
+map:Concept a d2rq:ClassMap;
 	d2rq:dataStorage map:contr_vocab_db;
-	d2rq:uriPattern "@@_whoot_top_concept.subject@@";
-	d2rq:class skos:TopConcept;
+	d2rq:uriPattern "@@_whoot_concept.subject@@";
+	d2rq:class skos:Concept;
 	.
 
-map:TopConceptSkosPrefLabel a d2rq:PropertyBridge;
-    d2rq:belongsToClassMap map:TopConcept;
+map:ConceptSkosPrefLabel a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
     d2rq:property skos:prefLabel;
-    d2rq:column "_whoot_top_concept.skos_preflabel";
+    d2rq:column "_whoot_concept.skos_preflabel";
     d2rq:lang "en";
 	.
 
-map:TopConceptSkosDefinition a d2rq:PropertyBridge;
-    d2rq:belongsToClassMap map:TopConcept;
+map:ConceptSkosDefinition a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
     d2rq:property skos:definition;
-    d2rq:column "_whoot_top_concept.skos_definition";
+    d2rq:column "_whoot_concept.skos_definition";
     d2rq:lang "en";
 	.
 
 # date field
-map:TopConceptDctermsIssued a d2rq:PropertyBridge;
-    d2rq:belongsToClassMap map:TopConcept;
+map:ConceptDctermsIssued a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
     d2rq:property dcterms:issued;
-    d2rq:column "_whoot_top_concept.dcterms_issued";
+    d2rq:column "_whoot_concept.dcterms_issued";
 	.
 
-map:TopConceptSkosInscheme a d2rq:PropertyBridge;
-    d2rq:belongsToClassMap map:TopConcept;
+map:ConceptSkosInscheme a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
     d2rq:property skos:inScheme;
-    d2rq:column "_whoot_top_concept.skos_inscheme";
+    d2rq:uriColumn "_whoot_concept.skos_inscheme";
 	.
+
+map:ConceptSkosBroader a d2rq:PropertyBridge;
+    d2rq:belongsToClassMap map:Concept;
+    d2rq:property skos:broader;
+	d2rq:join "_whoot_concept.subject <= _whoot_concept_skos_broader.subject";
+    d2rq:uriColumn "_whoot_concept_skos_broader.object";
+	.
+
+
+
+#######
+
+
+
+
 
 

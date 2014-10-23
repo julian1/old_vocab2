@@ -950,6 +950,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
 			join classification_scheme s on c.classification_scheme_id = s.id
+			-- root node
 			where a.parent_classification_scheme_category_id is null
 		</createView>
 
@@ -994,8 +995,81 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
+	<changeSet author="julian" id="000107--001">
+	
+		<!-- one-to-one fields -->	
+		<createView viewName="_whoot_concept">
+				select
+				c.name as subject,
+				'skos:Concept'::varchar as rdf_type,
+				c.label as skos_preflabel,
+				c.description as skos_definition,
+				c.date_added as dcterms_issued,
+				s.name as skos_inscheme
+			from classification_scheme_category c
+			join classification_scheme_association a on c.id = a.classification_scheme_category_id
+			join classification_scheme s on c.classification_scheme_id = s.id
+			-- not a root node
+			where a.parent_classification_scheme_category_id is not null
+		</createView>
+
+		<!-- top concept won't have broader -->
+		<!-- one-to-many --> 
+		<createView viewName="_whoot_concept_skos_broader">
+			select
+				c1.name as subject,
+				c2.name as object
+			from classification_scheme_association a
+			join classification_scheme_category c1 on a.classification_scheme_category_id = c1.id
+			join classification_scheme_category c2 on a.parent_classification_scheme_category_id = c2.id
+			-- order by c2.name, c1.name
+		</createView>
+
+		<!-- should be constrained to be top concept only -->
+		<createView viewName="_whoot_concept_skos_narrower">
+			select
+				object as subject,
+				subject as object
+			from _whoot_concept_skos_broader
+		</createView>
+
+
+		<createView viewName="_whoot_rdf_concept">
+			select 
+				c.subject as subject, 'skos:prefLabel' as predicate, c.skos_preflabel as object 
+			from _whoot_concept  c	
+			union all
+			select 
+				c.subject as subject, 'rdf:type' as predicate, c.rdf_type
+			from _whoot_concept  c	
+			union all
+			select
+				c.subject, 'skos:definition'::varchar, c.skos_definition 
+			from _whoot_concept  c	
+			union all
+			select
+				c.subject, 'dcterms:issued'::varchar, c.dcterms_issued::varchar
+			from _whoot_concept  c	
+			union all
+			select
+				c.subject, 'skos:inScheme'::varchar, c.skos_inscheme
+			from _whoot_concept  c	
+			union all
+			select
+				b.subject, 'skos:broader'::varchar, b.object
+			from _whoot_concept_skos_broader  b	
+			union all
+			select
+				n.subject, 'skos:narrower'::varchar, n.object
+			from _whoot_concept_skos_narrower n	
+
+		</createView>
+
+	</changeSet>
+
+
 	<!-- Concept -->
-	<changeSet author="julian" id="000111">
+	<!--changeSet author="julian" id="000111">
 		<createView viewName="_rdf_type_concept">
 			select
 				c.name as subject,
@@ -1003,10 +1077,10 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				'skos:Concept'::varchar as object
 			from classification_scheme_category c
 		</createView>
-	</changeSet>
+	</changeSet -->
 
 
-	<changeSet author="julian" id="000112">
+	<!-- changeSet author="julian" id="000112">
 		<createView viewName="_rdf_skos_broader">
 			select
 				c1.name as subject,
@@ -1015,12 +1089,11 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			from classification_scheme_association a
 			join classification_scheme_category c1 on a.classification_scheme_category_id = c1.id
 			join classification_scheme_category c2 on a.parent_classification_scheme_category_id = c2.id
-			-- order by c2.name, c1.name
 		</createView>
-	</changeSet>
+	</changeSet -->
 
 
-	<changeSet author="julian" id="000112-1">
+	<!-- changeSet author="julian" id="000112-1">
 		<createView viewName="_rdf_skos_narrower">
 			select
 				b.object as subject,
@@ -1028,7 +1101,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				b.subject as object
 			from _rdf_skos_broader b
 		</createView>
-	</changeSet>
+	</changeSet -->
 
 
 
@@ -1375,9 +1448,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			
 
 			union all select * from _rdf_skos_inscheme
-			union all select * from _rdf_skos_narrower
-			union all select * from _rdf_skos_broader
-			union all select * from _rdf_type_concept
+
 			union all select * from _rdf_type_concept_scheme_2
 			union all select * from _rdf_dc_title_2
 			union all select * from _rdf_dc_description_2
