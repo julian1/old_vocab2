@@ -1126,57 +1126,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 
 
-	<changeSet author="julian" id="000128">
-		<createView viewName="_rdf_skos_broader_2">
-			select
-			vt.uid as subject,
-			'skos:broader' as predicate,
-			csc.name as object
-			from vocabulary_term vt
-			-- get second-tier category
-			join term_category_classification tcc on tcc.vocabulary_term_id = vt.id
-			join classification_scheme_category csc on tcc.classification_scheme_category_id = csc.id
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000129">
-		<createView viewName="_rdf_skos_narrower_2">
-			select
-			b.object as subject,
-			'skos:narrower'::varchar as predicate,
-			b.subject as object
-			from _rdf_skos_broader_2 b order by subject;
-		</createView>
-	</changeSet>
-
-
-	<!-- broader for platforms -->
-	<changeSet author="julian" id="000130">
-		<createView viewName="_rdf_skos_broader_3">
-			select
-                svt.uid as subject,
-                'skos:broader' as predicate,
-                ovt.uid as object
-            from internal_associated_terms iat
-            left join vocabulary_term svt on iat.subject_vocabulary_term_id = svt.id
-            left join vocabulary_term ovt on iat.object_vocabulary_term_id = ovt.id
-            where association_type_name = 'isInstanceOf'
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000131">
-		<createView viewName="_rdf_skos_narrower_3">
-			select
-			b.object as subject,
-			'skos:narrower'::varchar as predicate,
-			b.subject as object
-			from _rdf_skos_broader_3 b order by subject;
-		</createView>
-	</changeSet>
-
-
 
 	<!--
 		Would be nice to order term results better, eg.
@@ -1198,13 +1147,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select * from _whoot_rdf_concept_scheme 
 			union all select * from _whoot_rdf_concept
 
-			union all select * from _rdf_skos_broader_2
-			union all select * from _rdf_skos_narrower_2
-			union all select * from _rdf_skos_broader_3
-			union all select * from _rdf_skos_narrower_3
-
-			-- TODO this is useful in develop, but slows things down so get rid of it later for performance
-			-- order by predicate, subject
 		</createView>
 	</changeSet>
 
