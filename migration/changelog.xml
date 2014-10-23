@@ -909,7 +909,10 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.label as skos_preflabel,
 				c.description as skos_definition,
 				c.date_added as dcterms_issued,
-				s.name as skos_inscheme
+				s.name as skos_inscheme,
+				-- should be issued ?
+				null as dcterms_created
+
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
 			join classification_scheme s on c.classification_scheme_id = s.id
@@ -922,12 +925,15 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				vt.uid as subject,
 				'skos:Concept'::varchar as rdf_type,
 				vt.name as skos_preflabel,
-				null as skos_definition,
+				vt.definition as skos_definition,
 				null as dcterms_issued,
-				null as skos_inscheme
+				vr.uid as skos_inscheme,
+				-- should be issued ?
+				vt.date_added as dcterms_created
 
 			from vocabulary_term vt
 
+			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
 
 
 		</createView>
@@ -1008,49 +1014,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 	<!-- -->
 
-	<changeSet author="julian" id="000120">
-		<createView viewName="_rdf_type_concept_2">
-			select
-				vt.uid as subject,
-				'rdf:type'::varchar as predicate,
-				'skos:Concept'::varchar as object
-			from vocabulary_term vt
-		</createView>
-	</changeSet>
 
-	<!-- in the register scheme -->
-	<changeSet author="julian" id="000121">
-		<createView viewName="_rdf_skos_inscheme_2">
-			select
-				vt.uid as subject,
-				'skos:inScheme' as predicate,
-				vr.uid as object
-			from vocabulary_term vt
-			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000122">
-		<createView viewName="_rdf_skos_pref_label_2">
-			select
-				vt.uid as subject,
-				'skos:prefLabel'::varchar as predicate,
-				vt.name as object
-			from vocabulary_term vt
-		</createView>
-	</changeSet>
-
-
-	<changeSet author="julian" id="000123">
-		<createView viewName="_rdf_skos_definition_2">
-			select
-				vt.uid as subject,
-				'skos:definition'::varchar as predicate,
-				vt.definition as object
-			from vocabulary_term vt
-		</createView>
-	</changeSet>
 
 
 	<changeSet author="julian" id="000124">
@@ -1259,12 +1223,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			union all select * from _whoot_rdf_concept
 			
 
-			-- union all select * from _rdf_skos_inscheme
-
-			union all select * from _rdf_type_concept_2
-			union all select * from _rdf_skos_inscheme_2
-			union all select * from _rdf_skos_pref_label_2
-			union all select * from _rdf_skos_definition_2
 			union all select * from _rdf_dc_source
 			union all select * from _rdf_dc_publisher_3
 			union all select * from _rdf_dcterms_created
