@@ -912,7 +912,8 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				s.name as skos_inscheme,
 				-- should be issued ?
 				null as dcterms_created,
-				null as dc_source
+				null as dc_source,
+				null as dc_publisher
 
 			from classification_scheme_category c
 			join classification_scheme_association a on c.id = a.classification_scheme_category_id
@@ -934,7 +935,12 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				case when rs.citation_string is not null
 					then rs.citation_string
 					else vr.name
-				end as dc_source
+				end as dc_source,
+				case
+					when rso.name is not null
+					then rso.name
+					else vro.name
+				end as dc_publisher
 
 
 			from vocabulary_term vt
@@ -943,6 +949,17 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 
 			-- should be left, and we test for null
 			left join reference_source rs on vt.reference_source_id = rs.id
+
+
+			-- reference source organisation
+			left join organisation rso on rs.organisation_id = rso.id
+			-- vocabulary register organisation
+			-- Bad Data? or migration - contains references to value 52 but there is no corresponding organisation
+			-- in the original data
+			left join responsible_party rp on vr.owner_responsible_party_id = rp.id
+			left join organisation vro on rp.organisation_id = vro.id
+
+
 
 		</createView>
 
@@ -983,6 +1000,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 				c.subject, 'skos:definition'::varchar, c.skos_definition 
 			from _whoot_concept  c	
 			union all
+			-- BOTH ISSUED AND CREATED ?
 			select
 				c.subject, 'dcterms:issued'::varchar, c.dcterms_issued::varchar
 			from _whoot_concept  c	
@@ -998,6 +1016,14 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			select
 				n.subject, 'skos:narrower'::varchar, n.object
 			from _whoot_concept_skos_narrower n	
+			union all
+			select
+				c.subject, 'dcterms:created'::varchar, c.dcterms_created::varchar
+			from _whoot_concept  c	
+			union all
+			select
+				c.subject, 'dc:source'::varchar, c.dc_source
+			from _whoot_concept  c	
 
 		</createView>
 
@@ -1023,22 +1049,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 	<!-- -->
 
 
-
-
-	<changeSet author="julian" id="000124">
-		<createView viewName="_rdf_dc_source">
-			select
-				vt.uid as subject,
-				'dc:source'::varchar as predicate,
-				case when rs.citation_string is not null
-					then rs.citation_string
-					else vr.name
-				end as object
-			from vocabulary_term vt
-			left join vocabulary_register vr on vt.vocabulary_register_id = vr.id
-			left join reference_source rs on vt.reference_source_id = rs.id
-		</createView>
-	</changeSet>
 
 
 	<changeSet author="julian" id="000125">
@@ -1221,7 +1231,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
 			union all select * from _whoot_rdf_concept
 			
 
-			union all select * from _rdf_dc_source
 			union all select * from _rdf_dc_publisher_3
 			union all select * from _rdf_skos_inscheme_3
 			union all select * from _rdf_skos_broader_2
